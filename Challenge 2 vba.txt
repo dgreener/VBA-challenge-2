@@ -1,0 +1,164 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2513
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Sub ticker()\
+    'Define Variables\
+        Dim name As String\
+        Dim volume As Double\
+        Dim ws As Worksheet\
+        Dim open_price As Double\
+        Dim close_price As Double\
+        Dim yearly_change As Double\
+        Dim percent_change As Double\
+        Dim summary_row As Integer\
+        Dim output_row As Integer\
+            \
+            \
+        For Each ws In Worksheets\
+        \
+        'Define initial values\
+         open_price = ws.Range("C" & 2).Value\
+         summary_row = 2\
+         output_row = 2\
+         volume = 0\
+        \
+        'Label summary table columns\
+        ws.Range("I" & 1).Value = "Ticker"\
+        ws.Range("J" & 1).Value = "Yearly Change"\
+        ws.Range("K" & 1).Value = "Percent Change"\
+        ws.Range("L" & 1).Value = "Total Stock Volume"\
+        \
+        'Label output table columns\
+        ws.Range("O" & 1).Value = "Ticker"\
+        ws.Range("P" & 1).Value = "Value"\
+        ws.Range("N" & 2).Value = "Greatest % Increase"\
+        ws.Range("N" & 3).Value = "Greatest % Decrease"\
+        ws.Range("N" & 4).Value = "Greatest Total Volume"\
+        \
+        'Find the last row in the first column\
+        last_row = ws.Cells(Rows.Count, 1).End(xlUp).Row\
+        \
+        'Loop through all the stocks\
+        For i = 2 To last_row\
+        \
+        'Check to see if we are still looking at the same ticker...\
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then\
+            \
+        'Set the ticker name\
+                name = ws.Cells(i, 1).Value\
+                \
+        'Print the ticker name in the summary table\
+                ws.Range("I" & summary_row).Value = name\
+                \
+        'Calculate total traded volume\
+                volume = volume + ws.Cells(i, 7).Value\
+                \
+        'Print the total traded volume\
+                ws.Range("L" & summary_row).Value = volume\
+                \
+        'Get the closing price\
+                close_price = ws.Cells(i, 6).Value\
+                \
+        'Calculate yearly change\
+                yearly_change = close_price - open_price\
+                \
+        'Print yearly change for each stock in the summary table\
+                ws.Range("J" & summary_row).Value = yearly_change\
+                \
+        'Account for calculation errors when using '0' denomintator in percent calculations\
+        'Source: https://github.com/shrawantee/VBA-Scripting---Stock-Market-Analysis/blob/master/HW2_Moderate_DS.vbs\
+                If (open_price = 0) Then\
+                    percent_change = 0\
+                Else\
+                    percent_change = yearly_change / open_price\
+                End If\
+        'Print yearly percent change for each stock in the summary table\
+                ws.Range("K" & summary_row).Value = percent_change\
+                ws.Range("K" & summary_row).NumberFormat = "0.00%"\
+                \
+        'Reset the row counter and move to the next summary table row\
+                summary_row = summary_row + 1\
+                \
+        'Reset the trade volume to zero\
+                volume = 0\
+                \
+        'Reset the opening price\
+                open_price = ws.Cells(i + 1, 3)\
+                    \
+            Else\
+        \
+        'If we are still working with the same stock / ticker...\
+        'Add to the total trade volume\
+                volume = volume + Cells(i, 7).Value\
+                \
+            End If\
+            \
+            \
+        Next i\
+        \
+\
+        \
+        'Find greatest % increase, greatest % decrease and greatest total volume in summary table\
+        ws.Range("P2") = WorksheetFunction.Max(ws.Range("K:K"))\
+        ws.Range("P2").NumberFormat = "0.00%"\
+        ws.Range("P3") = WorksheetFunction.Min(ws.Range("K:K"))\
+        ws.Range("P3").NumberFormat = "0.00%"\
+        ws.Range("P4") = WorksheetFunction.Max(ws.Range("L:L"))\
+        ws.Range("P4").NumberFormat = "0"\
+        \
+        'Find the row number for each data value\
+        increase = WorksheetFunction.Match(ws.Range("P2"), ws.Range("K2:K3001"), 0)\
+        decrease = WorksheetFunction.Match(ws.Range("P3"), ws.Range("K2:K3001"), 0)\
+        volume_total = WorksheetFunction.Match(ws.Range("P4"), ws.Range("L2:L3001"), 0)\
+        \
+        'Return the ticker that corresponds with each row value\
+        ws.Range("O2") = ws.Cells(increase + 1, 9)\
+        ws.Range("O3") = ws.Cells(decrease + 1, 9)\
+        ws.Range("O4") = ws.Cells(volume_total + 1, 9)\
+        \
+        \
+        \
+    \
+        \
+    Next ws\
+    \
+      'Apply conditional formatting to highlight positive changes green and negative changes red\
+        'First find the last row of the summary table\
+\
+    lastrow_summary_table = Cells(Rows.Count, 9).End(xlUp).Row\
+    \
+    'Color code yearly change\
+        For i = 2 To lastrow_summary_table\
+                If Cells(i, 10).Value > 0 Then\
+                    Cells(i, 10).Interior.ColorIndex = 10\
+                Else\
+                    Cells(i, 10).Interior.ColorIndex = 3\
+                End If\
+        Next i\
+        \
+         'Color code yearly % change\
+        For i = 2 To lastrow_summary_table\
+                If Cells(i, 11).Value > 0 Then\
+                    Cells(i, 11).Interior.ColorIndex = 10\
+                Else\
+                    Cells(i, 11).Interior.ColorIndex = 3\
+                End If\
+        Next i\
+End Sub\
+\
+        \
+        \
+    \
+        \
+        \
+        \
+            \
+            \
+        \
+\
+\
+}
